@@ -1,0 +1,27 @@
+# Objetos compilados
+*.o
+*.obj
+
+# Executáveis
+*.exe
+*.elf
+*.out
+*.bin
+programa
+
+# Bibliotecas estáticas/dinâmicas
+*.a
+*.so
+*.dll
+*.dylib
+
+# Arquivos temporários de build
+*.log
+*.tmp
+*.swp
+
+# Diretórios comuns de build
+/build/
+/dist/
+/Debug/
+/Release/
