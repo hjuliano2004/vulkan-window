@@ -27,5 +27,9 @@ void xdg_surface_configure(void *data, struct xdg_surface *xdg_surface, uint32_t
 void registry_remover(void *data, struct wl_registry *registry, uint32_t id);
 int create_shm_buffer(void *data);
 
+/* Frame callback: chamado quando compositor finaliza um frame */
+extern const struct wl_callback_listener frame_listener;
+void frame_done(void *data, struct wl_callback *callback, uint32_t time);
+
 
 #endif

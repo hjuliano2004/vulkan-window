@@ -13,30 +13,60 @@
 #include "janela/Janela.h"
 #include "janela/wayland/cbk.h"
 
+#include "tempo/Setts.h"
+#include "tempo/Diferenca.h"
+#include <poll.h>
+
+#define s 1000
+
+// callback precisa ter a mesma assinatura que o setInterval espera
+void spam(void *arg);
+
 int main(void) {
 
     Janela *janela = newJanela();
     sWayland *wayland = newWayland();
     Nos *nos = newNos(janela, wayland, "janela de teste");
 
-    printf("Janela criada — aguardando configure...\n");
+    printf("janela cls: %d\n", janela->cls);
+
+    double FPS = s / 60;
+
+    // passa NULL como argumento, já que não precisa
+    setInterval(spam, janela, 3);
+    //setTimeOut(spam, 0, 9);
+
+             
+
+    /* Loop principal: processa eventos pendentes, timers e aguarda eventos com timeout */
+    while (janela->cls != 0) {
+        wl_display_dispatch_pending(wayland->display);
+        wl_display_flush(wayland->display);
+
+        if(controleCiclo(wayland, s)){
+            break;
+        }
 
 
-    //setTimeOut(desligar,1);
-
-    while (wl_display_dispatch(wayland->display) != -1) {
-        
-       // rodar();
+         rodar();
     }
 
-    if (janela->shm_data && janela->cls >= 0) {
-        munmap(janela->shm_data, janela->width * janela->height * 4);
-        close(janela->cls);
-    }
 
-    wl_display_disconnect(wayland->display);
+
+
     return 0;
 }
+
+void spam(void *arg) {
+    (void)arg; // evita warning de argumento não usado
+
+    Janela *janela = arg;
+
+    janela->cls = 0;
+    printf("mensagem a cada 3 segundos\n");
+}
+
+
 
 /*
 

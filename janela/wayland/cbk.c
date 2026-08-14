@@ -23,6 +23,8 @@ const struct xdg_surface_listener xdg_surface_listener = {
     .configure = xdg_surface_configure,
 };
 
+const struct wl_callback_listener frame_listener;
+
 
 
 const struct wl_registry_listener registry_listener = {
@@ -64,9 +66,37 @@ void xdg_surface_configure(void *data, struct xdg_surface *xdg_surface, uint32_t
         if (create_shm_buffer(nos) == 0) {
             wl_surface_attach(janela->surface, janela->buffer, 0, 0);
             wl_surface_commit(janela->surface);
+            /* Agendar primeiro frame callback para iniciar o loop de redraw */
+            janela->frame_callback = wl_surface_frame(janela->surface);
+            wl_callback_add_listener(janela->frame_callback, &frame_listener, nos);
         }
     }
 }
+
+void frame_done(void *data, struct wl_callback *callback, uint32_t time) {
+
+    (void)time;
+    Nos *nos = data;
+    Janela *janela = nos->janela;
+
+    /* Destrói callback antigo */
+    if (callback) wl_callback_destroy(callback);
+    janela->frame_callback = NULL;
+
+    /* Aqui você pode atualizar pixels em janela->shm_data antes de anexar */
+    if (janela->buffer) {
+        wl_surface_attach(janela->surface, janela->buffer, 0, 0);
+        wl_surface_commit(janela->surface);
+    }
+
+    /* Re-agenda próximo frame */
+    janela->frame_callback = wl_surface_frame(janela->surface);
+    wl_callback_add_listener(janela->frame_callback, &frame_listener, nos);
+}
+
+const struct wl_callback_listener frame_listener = {
+    .done = frame_done,
+};
 
 int create_shm_buffer(void *data) {
 

@@ -15,6 +15,8 @@
 #include <wayland-client.h>
 
 
+extern struct pollfd *pfd;//responsável pelo polling
+
 typedef struct sWayland {
     struct wl_display *display;
     struct wl_registry *registry;
@@ -41,6 +43,7 @@ typedef struct Janela {
     struct wl_buffer *buffer;    // buffer anexado à superfície
     struct xdg_surface *xdg;  // camada intermediária do protocolo
     struct xdg_toplevel *toplevel; // janela gerenciável (barra de título, estados)
+    struct wl_callback *frame_callback; // callback de frame para redraw contínuo
 } Janela;
 
 typedef struct{
@@ -52,6 +55,8 @@ typedef struct{
 sWayland *newWayland();
 Janela *newJanela();
 Nos *newNos(Janela *janela, sWayland *wayland, char *titulo[]);
+struct pollfd *gPfd(sWayland *wayland);
+int controleCiclo(sWayland *wayland, int miliseconds);
 
 
 

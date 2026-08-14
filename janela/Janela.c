@@ -12,7 +12,10 @@
 #include <unistd.h>
 #include <wayland-client.h>
 #include "wayland/cbk.h"
+#include <poll.h>
 
+
+struct pollfd *pfd = NULL;
 
 sWayland *newWayland() {
     sWayland *wayland = malloc(sizeof(sWayland));
@@ -84,10 +87,68 @@ Nos *newNos(Janela *janela, sWayland *wayland, char *titulo[]){
     xdg_toplevel_set_title(janela->toplevel, titulo);
     wl_surface_commit(janela->surface);
 
-
-
-
-
     return nos;
 
 }
+
+struct pollfd *gPfd(sWayland *wayland) {//gerar pfd e entregar 
+    struct pollfd *pfd = calloc(1, sizeof(struct pollfd));
+
+    if(!pfd){
+        printf("não foi possível gerar pfd");
+        return NULL;
+    }
+
+    pfd->fd = wl_display_get_fd(wayland->display);
+    pfd->events = POLLIN;
+    return pfd;
+}
+
+int controleCiclo(sWayland *wayland, int miliseconds) {
+
+    if(pfd){
+            int ret = poll(pfd, 1, miliseconds);
+
+    if (ret < 0) {
+        return 1; // erro no poll
+    }
+
+    if (ret > 0) {
+        if (pfd->revents & POLLIN) {
+            if (wl_display_dispatch(wayland->display) == -1) {
+                return 1; // erro no dispatch
+            }
+        }
+    }
+
+    }else{
+        pfd = gPfd(wayland);
+    }
+
+
+
+    return 0; // sucesso
+}
+
+
+
+
+/*            int timeout_ms = 16; // tempo de  espera em milisegundos
+        int ret = poll(&pfd, 1, timeout_ms);
+        if (ret < 0) break;
+        if (ret > 0) {
+            if (pfd.revents & POLLIN) {
+                if (wl_display_dispatch(wayland->display) == -1) break;
+            }
+        }*/
+
+
+
+
+
+/*TODO:  esses  comandos um pos o outro renderizam a janela sem travar o loop
+
+        wl_display_roundtrip(wayland->display);
+        wl_display_dispatch_pending(wayland->display);
+        wl_display_flush(wayland->display);
+        */
