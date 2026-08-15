@@ -52,9 +52,11 @@ typedef struct{
 
 }Nos;
 
+void delJanela(Janela *janela);
+void deslWayland(sWayland *wayland);
 sWayland *newWayland();
 Janela *newJanela();
-Nos *newNos(Janela *janela, sWayland *wayland, char *titulo[]);
+Nos *newNos(Janela *janela, sWayland *wayland, char *titulo);
 struct pollfd *gPfd(sWayland *wayland);
 int controleCiclo(sWayland *wayland, int miliseconds);
 

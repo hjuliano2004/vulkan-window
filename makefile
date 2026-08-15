@@ -22,6 +22,7 @@ TARGET = run
 all: $(TARGET)
 	clear
 	./$(TARGET)
+	$(MAKE) clean   # limpa os .o depois de rodar
 
 # Linkagem final (com Wayland via pkg-config)
 $(TARGET): $(OBJ)
@@ -33,6 +34,12 @@ $(TARGET): $(OBJ)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(shell pkg-config --cflags wayland-client) -c $< -o $@
+
+# Verificação dos headers
+check-headers:
+	@for hdr in $(shell find . -name '*.h'); do \
+		$(CC) $(CFLAGS) -fsyntax-only $$hdr || exit 1; \
+	done
 
 # Limpeza
 clean:

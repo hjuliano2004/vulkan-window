@@ -43,14 +43,15 @@ int main(void) {
         wl_display_dispatch_pending(wayland->display);
         wl_display_flush(wayland->display);
 
-        if(controleCiclo(wayland, s)){
-            break;
-        }
+        if(controleCiclo(wayland, s)){break;}
 
 
          rodar();
     }
 
+
+delJanela(janela);
+deslWayland(wayland);
 
 
 

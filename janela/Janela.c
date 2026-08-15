@@ -59,7 +59,25 @@ Janela *newJanela() {
     return janela;
 }
 
-Nos *newNos(Janela *janela, sWayland *wayland, char *titulo[]){
+
+void delJanela(Janela *janela) {
+    if (!janela) {
+        printf("janela vazio no delJanela");
+    }
+    xdg_toplevel_destroy(janela->toplevel);
+    xdg_surface_destroy(janela->xdg);
+    wl_surface_destroy(janela->surface);
+}
+
+void deslWayland(sWayland *wayland) {
+     wl_display_disconnect(wayland->display);
+     }
+
+
+
+
+
+Nos *newNos(Janela *janela, sWayland *wayland, char *titulo){
     Nos *nos = malloc(sizeof(Nos));
 
     nos->janela = janela;
