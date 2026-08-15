@@ -30,7 +30,7 @@ int main(void) {
 
     printf("janela cls: %d\n", janela->cls);
 
-    double FPS = s / 60;
+    double FPS = s/60;
 
     // passa NULL como argumento, já que não precisa
     setInterval(spam, janela, 3);
@@ -43,10 +43,11 @@ int main(void) {
         wl_display_dispatch_pending(wayland->display);
         wl_display_flush(wayland->display);
 
-        if(controleCiclo(wayland, s)){break;}
+        if(controleCiclo(wayland, FPS)){break;}
 
 
-         rodar();
+        calculoFps();
+        rodar();
     }
 
 
@@ -63,8 +64,9 @@ void spam(void *arg) {
 
     Janela *janela = arg;
 
-    janela->cls = 0;
+    //janela->cls = 0;
     printf("mensagem a cada 3 segundos\n");
+    printf("FPS: %.0f\n", ciclo->FPS);
 }
 
 

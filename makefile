@@ -20,7 +20,6 @@ TARGET = run
 
 # Regra principal
 all: $(TARGET)
-	clear
 	./$(TARGET)
 	$(MAKE) clean   # limpa os .o depois de rodar
 
