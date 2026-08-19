@@ -122,19 +122,19 @@ struct pollfd *gPfd(sWayland *wayland) {//gerar pfd e entregar
     return pfd;
 }
 
-int controleCiclo(sWayland *wayland, int miliseconds) {
+void controleCiclo(sWayland *wayland, Janela *janela, int miliseconds) {
 
     if(pfd){
             int ret = poll(pfd, 1, miliseconds);
 
     if (ret < 0) {
-        return 1; // erro no poll
+        janela->cls = 0;
     }
 
     if (ret > 0) {
         if (pfd->revents & POLLIN) {
             if (wl_display_dispatch(wayland->display) == -1) {
-                return 1; // erro no dispatch
+                janela->cls = 0; // erro no dispatch
             }
         }
     }
@@ -142,10 +142,6 @@ int controleCiclo(sWayland *wayland, int miliseconds) {
     }else{
         pfd = gPfd(wayland);
     }
-
-
-
-    return 0; // sucesso
 }
 
 

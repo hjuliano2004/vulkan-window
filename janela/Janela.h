@@ -58,7 +58,7 @@ sWayland *newWayland();
 Janela *newJanela();
 Nos *newNos(Janela *janela, sWayland *wayland, char *titulo);
 struct pollfd *gPfd(sWayland *wayland);
-int controleCiclo(sWayland *wayland, int miliseconds);
+void controleCiclo(sWayland *wayland, Janela *janela, int miliseconds);
 
 
 

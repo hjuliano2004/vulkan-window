@@ -15,7 +15,7 @@
 
 #include "tempo/Setts.h"
 #include "tempo/Diferenca.h"
-#include <poll.h>
+
 
 #define s 1000
 
@@ -28,22 +28,20 @@ int main(void) {
     sWayland *wayland = newWayland();
     Nos *nos = newNos(janela, wayland, "janela de teste");
 
+
     printf("janela cls: %d\n", janela->cls);
 
-    double FPS = s/60;
+    double FPS =  0;// s/60;
 
-    // passa NULL como argumento, já que não precisa
     setInterval(spam, janela, 3);
     //setTimeOut(spam, 0, 9);
 
-             
 
-    /* Loop principal: processa eventos pendentes, timers e aguarda eventos com timeout */
     while (janela->cls != 0) {
         wl_display_dispatch_pending(wayland->display);
         wl_display_flush(wayland->display);
 
-        if(controleCiclo(wayland, FPS)){break;}
+        controleCiclo(wayland, janela, FPS);
 
 
         calculoFps();
@@ -53,7 +51,6 @@ int main(void) {
 
 delJanela(janela);
 deslWayland(wayland);
-
 
 
     return 0;

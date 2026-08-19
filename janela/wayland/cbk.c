@@ -116,12 +116,23 @@ int create_shm_buffer(void *data) {
 
     /* Preenche branco (XRGB8888) */
     uint32_t *pixel = (uint32_t *)janela->shm_data;
-    for (int i = 0; i < janela->width * janela->height; ++i) pixel[i] = 0x00FFFFFF;
+    for (int i = 0; i < janela->width * janela->height; ++i) {
+        pixel[i] = 0x00FFFFFF;
+    }
+
+    for (int i = 0; i < janela->width; i += 30) {
+    for (int j = 0; j < janela->height; j++) {
+        pixel[j * janela->width + i] = 0x00000000;
+    }
+}
+
 
     struct wl_shm_pool *pool = wl_shm_create_pool(wayland->shm, janela->cls, size);
-    janela->buffer = wl_shm_pool_create_buffer(pool, 0, janela->width, janela->height, stride, WL_SHM_FORMAT_XRGB8888);
+    janela->buffer = wl_shm_pool_create_buffer(pool, 0, janela->width, janela->height, stride, WL_SHM_FORMAT_ARGB8888);
     wl_shm_pool_destroy(pool);
     return 0;
 }
 
 void registry_remover(void *data, struct wl_registry *registry, uint32_t id) {}
+
+
