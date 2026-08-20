@@ -39,8 +39,12 @@ Janela *newJanela() {
     Janela *janela = malloc(sizeof(Janela));
 
     // Estado interno
-    janela->width = 600;
-    janela->height = 400;
+    janela->width = 0;
+    janela->height = 0;
+    janela->novoWidth = 600;
+    janela->novoHeight = 400;
+
+
     janela->stride     = 0;
     janela->pixl       = NULL;
     janela->shm_data   = NULL;
@@ -55,6 +59,12 @@ Janela *newJanela() {
     janela->buffer  = NULL;
     janela->xdg     = NULL;
     janela->toplevel     = NULL;
+    janela->frame_callback = NULL;
+    janela->buffer_liberado = 0;
+    janela->frame_pronto = 0;
+    janela->redraw_requested = 0;
+    janela->nos = NULL;
+    janela->pixel_format = WL_SHM_FORMAT_ARGB8888;
 
     return janela;
 }
@@ -63,10 +73,20 @@ Janela *newJanela() {
 void delJanela(Janela *janela) {
     if (!janela) {
         printf("janela vazio no delJanela");
+        return;
     }
+    if (janela->frame_callback)
+        wl_callback_destroy(janela->frame_callback);
+    if (janela->buffer)
+        wl_buffer_destroy(janela->buffer);
+    if (janela->shm_data)
+        munmap(janela->shm_data, (size_t)janela->stride * janela->height);
+    if (janela->cls >= 0)
+        close(janela->cls);
     xdg_toplevel_destroy(janela->toplevel);
     xdg_surface_destroy(janela->xdg);
     wl_surface_destroy(janela->surface);
+    free(janela);
 }
 
 void deslWayland(sWayland *wayland) {
@@ -82,6 +102,7 @@ Nos *newNos(Janela *janela, sWayland *wayland, char *titulo){
 
     nos->janela = janela;
     nos->wayland = wayland;
+    janela->nos = nos;
 
     wayland->registry = wl_display_get_registry(wayland->display);
 

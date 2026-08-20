@@ -17,9 +17,6 @@
 #include "tempo/Diferenca.h"
 
 
-#define s 1000
-
-// callback precisa ter a mesma assinatura que o setInterval espera
 void spam(void *arg);
 
 int main(void) {
@@ -28,20 +25,25 @@ int main(void) {
     sWayland *wayland = newWayland();
     Nos *nos = newNos(janela, wayland, "janela de teste");
 
-
-    printf("janela cls: %d\n", janela->cls);
+    if (!janela || !wayland || !nos)
+        return 1;
 
     double FPS =  0;// s/60;
 
-    setInterval(spam, janela, 3);
+    
+
+    setInterval(spam, janela, 0.3);
     //setTimeOut(spam, 0, 9);
 
 
     while (janela->cls != 0) {
         wl_display_dispatch_pending(wayland->display);
+         //wl_display_dispatch(wayland->display);
         wl_display_flush(wayland->display);
 
         controleCiclo(wayland, janela, FPS);
+
+
 
 
         calculoFps();
@@ -57,11 +59,11 @@ deslWayland(wayland);
 }
 
 void spam(void *arg) {
-    (void)arg; // evita warning de argumento não usado
-
     Janela *janela = arg;
 
-    //janela->cls = 0;
+    // O timer pede um novo desenho; a escrita ocorre no callback de frame.
+    solicitarRedesenho(janela);
+    desenharJanela(janela);
     printf("mensagem a cada 3 segundos\n");
     printf("FPS: %.0f\n", ciclo->FPS);
 }

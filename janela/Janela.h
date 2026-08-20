@@ -29,6 +29,9 @@ typedef struct Janela {
     // Estado interno
     int width;     // largura da janela
     int height;    // altura da janela
+    int novoWidth;
+    int novoHeight;
+
     uint32_t stride;    // bytes por linha (width * 4, por exemplo)
     uint8_t *pixl;      // ponteiro para pixels na memória compartilhada
     void *shm_data;     // ponteiro mapeado do tmpfile
@@ -44,9 +47,14 @@ typedef struct Janela {
     struct xdg_surface *xdg;  // camada intermediária do protocolo
     struct xdg_toplevel *toplevel; // janela gerenciável (barra de título, estados)
     struct wl_callback *frame_callback; // callback de frame para redraw contínuo
+    int buffer_liberado; // indica que o compositor terminou de usar o buffer
+    int frame_pronto; // indica que o callback de frame autorizou o próximo desenho
+    int redraw_requested; // pedido de redesenho feito pela aplicação
+    struct Nos *nos; // contexto usado para enviar o buffer ao Wayland
+    uint32_t pixel_format;
 } Janela;
 
-typedef struct{
+typedef struct Nos {
     Janela *janela;
     sWayland *wayland;
 

@@ -21,7 +21,7 @@ TARGET = run
 # Regra principal
 all: $(TARGET)
 	./$(TARGET)
-	$(MAKE) clean   # limpa os .o depois de rodar
+	$(MAKE) clean
 
 # Linkagem final (com Wayland via pkg-config)
 $(TARGET): $(OBJ)
