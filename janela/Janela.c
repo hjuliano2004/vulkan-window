@@ -125,6 +125,7 @@ Nos *newNos(Janela *janela, sWayland *wayland, char *titulo){
     janela->toplevel = xdg_surface_get_toplevel(janela->xdg);
     xdg_toplevel_set_title(janela->toplevel, titulo);
     wl_surface_commit(janela->surface);
+    wl_display_roundtrip(wayland->display);
 
     return nos;
 

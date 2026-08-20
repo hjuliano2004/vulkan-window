@@ -47,6 +47,8 @@ int main(void) {
         pixel[i] = 0xFFF00000;
     }
 
+        //uint32_t **quadro = calloc(padrao, sizeof(uint32_t *));
+
 /*
 
 

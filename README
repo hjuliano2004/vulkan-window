@@ -1,0 +1,19 @@
+# Projeto: Biblioteca Gráfica Minimalista em C
+
+## Filosofia
+Este projeto segue uma ideia simples: **se não for auto‑suficiente, não serve**.  
+Nada de instalar dezenas de dependências para rodar um "hello world".  
+Aqui você encontra código direto em C, que funciona sozinho, sem precisar de frameworks externos.
+
+## Objetivo
+- Explorar o funcionamento interno do [Wayland](ca://s?q=Wayland_protocol_XML) e da renderização de pixels.
+- Criar ferramentas gráficas básicas (buffers, fontes bitmap, animações) totalmente independentes.
+- Servir como base para quem quer aprender ou construir seus próprios sistemas gráficos sem depender de toolkits pesados.
+
+## Como usar
+Clone o repositório e compile:
+```bash
+git clone https://github.com/seuusuario/seuprojeto.git
+cd seuprojeto
+make
+./bin/exemplo
