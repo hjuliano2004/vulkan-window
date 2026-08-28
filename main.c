@@ -1,47 +1,40 @@
 #define _POSIX_C_SOURCE 200809L
+#include "janela/Janela.h"
+#include "janela/wayland/cbk.h"
 #include "janela/xdg-shell-client-protocol.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
-#include <errno.h>
 #include <unistd.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <wayland-client.h>
-#include "janela/Janela.h"
-#include "janela/wayland/cbk.h"
 
 int main(void) {
 
-    Janela *janela = newJanela();
-    sWayland *wayland = newWayland();
-    Nos *nos = newNos(janela, wayland, "janela de teste");
-
-    printf("Janela criada — aguardando configure...\n");
+    Janela *janela = new_Janela();
+    sWayland *wayland = new_Wayland();
+    new_Nos(janela, wayland, "janela de teste");
 
 
-    //setTimeOut(desligar,1);
-
-    while (wl_display_dispatch(wayland->display) != -1) {
-        
-       // rodar();
+    uint32_t *pixel = (uint32_t *)janela->shm_data;
+    for (int i = 0; i < janela->width * janela->height; ++i) {
+        pixel[i] = WHITE;
     }
 
-    if (janela->shm_data && janela->cls >= 0) {
-        munmap(janela->shm_data, janela->width * janela->height * 4);
-        close(janela->cls);
+    solicitarRedesenho(janela);
+
+    double FPS = 0;
+
+    while (janela->cls != 0) {
+        wl_display_dispatch_pending(wayland->display);
+        // wl_display_dispatch(wayland->display);
+        wl_display_flush(wayland->display);
+
+        controleCiclo(wayland, janela, FPS);
     }
 
-    wl_display_disconnect(wayland->display);
+    delJanela(janela);
+    deslWayland(wayland);
+
     return 0;
 }
-
-/*
-
-
-cd 'Área de trabalho'
-cd vulkan
-
-*/

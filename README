@@ -1,0 +1,21 @@
+# Projeto: Biblioteca Gráfica Minimalista em C
+
+## Filosofia
+Este projeto segue uma ideia simples: **se não for auto‑suficiente, não serve**.  
+Nada de instalar dezenas de dependências para abrir uma janela".  
+Aqui você encontra código direto em C, que funciona sozinho, sem precisar de frameworks externos. 
+tudo que você precisa é um linux, um servidor wayland e as ferramentas básicas de vulkan e wayland
+
+## Objetivo
+- Explorar o funcionamento interno do [Wayland] e da renderização de pixels.
+- Criar ferramentas gráficas básicas (buffers, fontes bitmap, animações) totalmente independentes.
+- Servir como base para quem quer aprender ou construir seus próprios sistemas gráficos sem depender de toolkits pesados.
+
+## Como usar
+Clone o repositório e compile:
+```bash
+git clone https://github.com/hjuliano2004/vulkan-window.git
+cd vulkan-window
+make
+
+## o projeto compila e roda automaticamente

@@ -12,9 +12,12 @@
 #include <unistd.h>
 #include <wayland-client.h>
 #include "wayland/cbk.h"
+#include <poll.h>
 
 
-sWayland *newWayland() {
+struct pollfd *pfd = NULL;
+
+sWayland *new_Wayland() {
     sWayland *wayland = malloc(sizeof(sWayland));
 
     wayland->registry = NULL;
@@ -32,12 +35,16 @@ sWayland *newWayland() {
     return wayland;
 }
 
-Janela *newJanela() {
+Janela *new_Janela() {
     Janela *janela = malloc(sizeof(Janela));
 
     // Estado interno
-    janela->width = 600;
-    janela->height = 400;
+    janela->width = 0;
+    janela->height = 0;
+    janela->novoWidth = 600;
+    janela->novoHeight = 400;
+
+
     janela->stride     = 0;
     janela->pixl       = NULL;
     janela->shm_data   = NULL;
@@ -52,15 +59,50 @@ Janela *newJanela() {
     janela->buffer  = NULL;
     janela->xdg     = NULL;
     janela->toplevel     = NULL;
+    janela->frame_callback = NULL;
+    janela->buffer_liberado = 0;
+    janela->frame_pronto = 0;
+    janela->redraw_requested = 0;
+    janela->nos = NULL;
+    janela->pixel_format = WL_SHM_FORMAT_ARGB8888;
 
     return janela;
 }
 
-Nos *newNos(Janela *janela, sWayland *wayland, char *titulo[]){
+
+void delJanela(Janela *janela) {
+    if (!janela) {
+        printf("janela vazio no delJanela");
+        return;
+    }
+    if (janela->frame_callback)
+        wl_callback_destroy(janela->frame_callback);
+    if (janela->buffer)
+        wl_buffer_destroy(janela->buffer);
+    if (janela->shm_data)
+        munmap(janela->shm_data, (size_t)janela->stride * janela->height);
+    if (janela->cls >= 0)
+        close(janela->cls);
+    xdg_toplevel_destroy(janela->toplevel);
+    xdg_surface_destroy(janela->xdg);
+    wl_surface_destroy(janela->surface);
+    free(janela);
+}
+
+void deslWayland(sWayland *wayland) {
+     wl_display_disconnect(wayland->display);
+     }
+
+
+
+
+
+Nos *new_Nos(Janela *janela, sWayland *wayland, char *titulo){
     Nos *nos = malloc(sizeof(Nos));
 
     nos->janela = janela;
     nos->wayland = wayland;
+    janela->nos = nos;
 
     wayland->registry = wl_display_get_registry(wayland->display);
 
@@ -83,11 +125,66 @@ Nos *newNos(Janela *janela, sWayland *wayland, char *titulo[]){
     janela->toplevel = xdg_surface_get_toplevel(janela->xdg);
     xdg_toplevel_set_title(janela->toplevel, titulo);
     wl_surface_commit(janela->surface);
-
-
-
-
+    wl_display_roundtrip(wayland->display);
 
     return nos;
 
 }
+
+struct pollfd *gPfd(sWayland *wayland) {//gerar pfd e entregar 
+    struct pollfd *pfd = calloc(1, sizeof(struct pollfd));
+
+    if(!pfd){
+        printf("não foi possível gerar pfd");
+        return NULL;
+    }
+
+    pfd->fd = wl_display_get_fd(wayland->display);
+    pfd->events = POLLIN;
+    return pfd;
+}
+
+void controleCiclo(sWayland *wayland, Janela *janela, int miliseconds) {
+
+    if(pfd){
+            int ret = poll(pfd, 1, miliseconds);
+
+    if (ret < 0) {
+        janela->cls = 0;
+    }
+
+    if (ret > 0) {
+        if (pfd->revents & POLLIN) {
+            if (wl_display_dispatch(wayland->display) == -1) {
+                janela->cls = 0; // erro no dispatch
+            }
+        }
+    }
+
+    }else{
+        pfd = gPfd(wayland);
+    }
+}
+
+
+
+
+/*            int timeout_ms = 16; // tempo de  espera em milisegundos
+        int ret = poll(&pfd, 1, timeout_ms);
+        if (ret < 0) break;
+        if (ret > 0) {
+            if (pfd.revents & POLLIN) {
+                if (wl_display_dispatch(wayland->display) == -1) break;
+            }
+        }*/
+
+
+
+
+
+/*TODO:  esses  comandos um pos o outro renderizam a janela sem travar o loop
+
+        wl_display_roundtrip(wayland->display);
+        wl_display_dispatch_pending(wayland->display);
+        wl_display_flush(wayland->display);
+        */

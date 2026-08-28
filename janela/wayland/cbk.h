@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <wayland-client.h>
 #include "../xdg-shell-client-protocol.h"
+#include "../Janela.h"
 
 
 extern const struct xdg_wm_base_listener wm_base_listener;
@@ -26,6 +27,15 @@ void registry_handler(void *data, struct wl_registry *registry, uint32_t id, con
 void xdg_surface_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial);
 void registry_remover(void *data, struct wl_registry *registry, uint32_t id);
 int create_shm_buffer(void *data);
+void attJanela(void *data);
+void solicitarRedesenho(Janela *janela);
+//void desenharJanela(Janela *janela);
+
+/* Frame callback: chamado quando compositor finaliza um frame */
+extern const struct wl_callback_listener frame_listener;
+void frame_done(void *data, struct wl_callback *callback, uint32_t time);
+extern const struct wl_buffer_listener buffer_listener;
+void buffer_release(void *data, struct wl_buffer *buffer);
 
 
 #endif

@@ -20,12 +20,12 @@ TARGET = run
 
 # Regra principal
 all: $(TARGET)
-	clear
 	./$(TARGET)
+	$(MAKE) clean
 
 # Linkagem final (com Wayland via pkg-config)
 $(TARGET): $(OBJ)
-	$(CC) $(OBJ) -o $@ $(shell pkg-config --libs wayland-client)
+	$(CC) $(OBJ) -o $@ $(shell pkg-config --libs wayland-client) -lvulkan
 
 # Regras de compilação
 %.o: %.c
@@ -33,6 +33,12 @@ $(TARGET): $(OBJ)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(shell pkg-config --cflags wayland-client) -c $< -o $@
+
+# Verificação dos headers
+check-headers:
+	@for hdr in $(shell find . -name '*.h'); do \
+		$(CC) $(CFLAGS) -fsyntax-only $$hdr || exit 1; \
+	done
 
 # Limpeza
 clean:
