@@ -62,12 +62,29 @@ typedef struct Nos {
 
 void delJanela(Janela *janela);
 void deslWayland(sWayland *wayland);
-sWayland *newWayland();
-Janela *newJanela();
-Nos *newNos(Janela *janela, sWayland *wayland, char *titulo);
+sWayland *new_Wayland();
+Janela *new_Janela();
+Nos *new_Nos(Janela *janela, sWayland *wayland, char *titulo);
 struct pollfd *gPfd(sWayland *wayland);
 void controleCiclo(sWayland *wayland, Janela *janela, int miliseconds);
 
+
+
+
+// Formato: 0xAARRGGBB (Alpha, Red, Green, Blue)
+
+#define RED     0xFFFF0000
+#define GREEN   0xFF00FF00
+#define BLUE    0xFF0000FF
+#define WHITE   0xFFFFFFFF
+#define BLACK   0xFF000000
+#define YELLOW  0xFFFFFF00
+#define CYAN    0xFF00FFFF
+#define MAGENTA 0xFFFF00FF
+#define GRAY    0xFF808080
+#define ORANGE  0xFFFFA500
+#define PURPLE  0xFF800080
+#define BROWN   0xFFA52A2A
 
 
 

@@ -104,6 +104,7 @@ void buffer_release(void *data, struct wl_buffer *buffer) {
         solicitarRedesenho(janela);
 }
 
+/*
 void desenharJanela(Janela *janela) {
 
 
@@ -113,7 +114,7 @@ void desenharJanela(Janela *janela) {
     }
 
         
-}
+}*/
 
 
 void solicitarRedesenho(Janela *janela) {

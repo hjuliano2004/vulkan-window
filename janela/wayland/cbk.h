@@ -29,7 +29,7 @@ void registry_remover(void *data, struct wl_registry *registry, uint32_t id);
 int create_shm_buffer(void *data);
 void attJanela(void *data);
 void solicitarRedesenho(Janela *janela);
-void desenharJanela(Janela *janela);
+//void desenharJanela(Janela *janela);
 
 /* Frame callback: chamado quando compositor finaliza um frame */
 extern const struct wl_callback_listener frame_listener;

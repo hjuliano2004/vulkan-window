@@ -17,7 +17,7 @@
 
 struct pollfd *pfd = NULL;
 
-sWayland *newWayland() {
+sWayland *new_Wayland() {
     sWayland *wayland = malloc(sizeof(sWayland));
 
     wayland->registry = NULL;
@@ -35,7 +35,7 @@ sWayland *newWayland() {
     return wayland;
 }
 
-Janela *newJanela() {
+Janela *new_Janela() {
     Janela *janela = malloc(sizeof(Janela));
 
     // Estado interno
@@ -97,7 +97,7 @@ void deslWayland(sWayland *wayland) {
 
 
 
-Nos *newNos(Janela *janela, sWayland *wayland, char *titulo){
+Nos *new_Nos(Janela *janela, sWayland *wayland, char *titulo){
     Nos *nos = malloc(sizeof(Nos));
 
     nos->janela = janela;
