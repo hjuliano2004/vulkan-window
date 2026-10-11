@@ -13,6 +13,7 @@
 #include <wayland-client.h>
 #include "wayland/cbk.h"
 #include <poll.h>
+#include "wayland/mouse.h"
 
 
 struct pollfd *pfd = NULL;
@@ -41,8 +42,8 @@ Janela *new_Janela() {
     // Estado interno
     janela->width = 0;
     janela->height = 0;
-    janela->novoWidth = 600;
-    janela->novoHeight = 400;
+    janela->novoWidth = 720; //1920
+    janela->novoHeight = 480;//1080
 
 
     janela->stride     = 0;
@@ -64,7 +65,7 @@ Janela *new_Janela() {
     janela->frame_pronto = 0;
     janela->redraw_requested = 0;
     janela->nos = NULL;
-    janela->pixel_format = WL_SHM_FORMAT_ARGB8888;
+    janela->pixel_format = WL_SHM_FORMAT_XRGB8888;
 
     return janela;
 }
@@ -90,14 +91,15 @@ void delJanela(Janela *janela) {
 }
 
 void deslWayland(sWayland *wayland) {
-     wl_display_disconnect(wayland->display);
-     }
+    wl_display_disconnect(wayland->display);
+    }
 
 
 
 
 
 Nos *new_Nos(Janela *janela, sWayland *wayland, char *titulo){
+    new_Mouse();
     Nos *nos = malloc(sizeof(Nos));
 
     nos->janela = janela;
@@ -120,10 +122,18 @@ Nos *new_Nos(Janela *janela, sWayland *wayland, char *titulo){
 
     janela->xdg = xdg_wm_base_get_xdg_surface(wayland->wm_base, janela->surface);
 
-    xdg_surface_add_listener(janela->xdg, &xdg_surface_listener, nos);
+    xdg_surface_add_listener(janela->xdg, &xdg_surface_listener, nos);//adiciona listener pra eventos de configuração da janela
 
-    janela->toplevel = xdg_surface_get_toplevel(janela->xdg);
-    xdg_toplevel_set_title(janela->toplevel, titulo);
+    janela->toplevel = xdg_surface_get_toplevel(janela->xdg);//cria a camada de gerenciamento da janela (barra de título, estados, etc)
+    xdg_toplevel_set_title(janela->toplevel, titulo);//titulo na barra de tarefas
+    xdg_toplevel_set_app_id(janela->toplevel, titulo);
+
+    xdg_toplevel_add_listener(janela->toplevel, &toplevel_listener, nos);//adiciona listener para eventos da janela
+
+    int wl_pointer_add_listener(struct wl_pointer *pointer,const struct wl_pointer_listener *listener,void *data);   
+
+
+
     wl_surface_commit(janela->surface);
     wl_display_roundtrip(wayland->display);
 

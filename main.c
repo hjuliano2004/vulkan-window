@@ -9,11 +9,28 @@
 #include <unistd.h>
 #include <wayland-client.h>
 
+#include "tempo/Setts.h"
+
+
+void redimensionar(void *arg){
+
+    Nos *nos = arg;
+
+    nos->janela->novoWidth = 1920;
+    create_shm_buffer(nos);
+    solicitarRedesenho(nos->janela);
+    
+    printf("print estourado\n");
+
+}
+
 int main(void) {
 
     Janela *janela = new_Janela();
+    Janela *janela2 = new_Janela();
     sWayland *wayland = new_Wayland();
-    new_Nos(janela, wayland, "janela de teste");
+    Nos *nos = new_Nos(janela, wayland, "janela de teste");
+    Nos *nos2 = new_Nos(janela2, wayland, "janela 2");
 
 
     uint32_t *pixel = (uint32_t *)janela->shm_data;
@@ -21,19 +38,42 @@ int main(void) {
         pixel[i] = WHITE;
     }
 
+    FILE *f = fopen("rubi.ppm", "r");
+
+
+    if(!f){
+        perror("erro ao abrir arquivo");
+        return 1;
+    }
+
+    /*
+   
+
+    janela2->novoHeight = 720;
+    create_shm_buffer(nos2);
+*/
+
+    setTimeOut(redimensionar, nos, 2);
+
+    
+
+    double FPS = 1000/60;
+
     solicitarRedesenho(janela);
-
-    double FPS = 0;
-
+    solicitarRedesenho(janela2);
     while (janela->cls != 0) {
         wl_display_dispatch_pending(wayland->display);
         // wl_display_dispatch(wayland->display);
         wl_display_flush(wayland->display);
 
+
         controleCiclo(wayland, janela, FPS);
+
+        rodar();
     }
 
     delJanela(janela);
+    delJanela(janela2);
     deslWayland(wayland);
 
     return 0;

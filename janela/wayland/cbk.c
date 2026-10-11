@@ -2,6 +2,7 @@
 
 #include "cbk.h"
 #include "../Janela.h"
+#include "mouse.h"
 #include "../xdg-shell-client-protocol.h"
 #include <errno.h>
 #include <fcntl.h>
@@ -13,6 +14,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <wayland-client.h>
+
+//----------estruturas---------------------
 
 const struct xdg_wm_base_listener wm_base_listener = {
     .ping = wm_base_ping,
@@ -28,6 +31,25 @@ const struct wl_registry_listener registry_listener = {registry_handler,
 const struct wl_buffer_listener buffer_listener = {
     .release = buffer_release,
 };
+
+const struct xdg_toplevel_listener toplevel_listener = {
+    .configure = handle_toplevel_configure,
+    .close = handle_close,
+};
+
+const struct wl_pointer_listener pointer_listener = {
+    //.enter  = pointer_enter,
+    //.leave  = pointer_leave,
+    .motion = pointer_motion,
+    .button = pointer_button,
+    //.axis   = pointer_axis,
+};
+
+
+
+
+//----------------funções---------------------
+
 
 void wm_base_ping(void *data, struct xdg_wm_base *wm_base, uint32_t serial) {
     xdg_wm_base_pong(wm_base, serial);
@@ -85,8 +107,7 @@ void frame_done(void *data, struct wl_callback *callback, uint32_t time) {
     janela->frame_pronto = 1;
 
     // O frame só pode ser reapresentado quando o compositor liberou o buffer.
-    if (janela->buffer && janela->buffer_liberado &&
-        janela->redraw_requested) {
+    if (janela->buffer && janela->buffer_liberado && janela->redraw_requested) {
         attJanela(nos);
     }
 }
@@ -113,19 +134,18 @@ void desenharJanela(Janela *janela) {
         pixel[i] = 0xFFFF0000;
     }
 
-        
-}*/
 
+}*/
 
 void solicitarRedesenho(Janela *janela) {
     janela->redraw_requested = 1;
     if (janela->buffer && janela->buffer_liberado && janela->frame_pronto) {
-        //desenharJanela(janela);
+        // desenharJanela(janela);
         attJanela(janela->nos);
     }
 }
 
-int create_shm_buffer(void *data) {
+int create_shm_buffer(void *data) {//cria o buffer e redimensiona ele
 
     Nos *nos = data;
     Janela *janela = nos->janela;
@@ -166,9 +186,9 @@ int create_shm_buffer(void *data) {
 
     struct wl_shm_pool *pool =
         wl_shm_create_pool(wayland->shm, janela->cls, size);
-    janela->buffer = wl_shm_pool_create_buffer(
-        pool, 0, janela->width, janela->height, janela->stride,
-        janela->pixel_format);
+    janela->buffer =
+        wl_shm_pool_create_buffer(pool, 0, janela->width, janela->height,
+                                  janela->stride, janela->pixel_format);
 
     wl_shm_pool_destroy(pool);
     wl_buffer_add_listener(janela->buffer, &buffer_listener, janela);
@@ -194,4 +214,27 @@ void attJanela(void *data) {
     wl_surface_attach(janela->surface, janela->buffer, 0, 0);
     wl_surface_damage(janela->surface, 0, 0, janela->width, janela->height);
     wl_surface_commit(janela->surface);
+}
+
+void handle_toplevel_configure(void *data,  struct xdg_toplevel *xdg_toplevel,  int32_t width, int32_t height,  struct wl_array *states) {
+    Nos *nos = data;
+
+    /*
+     * width/height podem ser 0, especialmente
+     * quando o compositor não quer impor um tamanho.
+     */
+    if (width > 0)
+        nos->janela->width = width;
+
+    if (height > 0)
+        nos->janela->height = height;
+}
+
+// evento de fechar por clique
+
+void handle_close(void *data, struct xdg_toplevel *xdg_toplevel) {
+    Nos *nos = data;
+    nos->janela->cls = 0; // sinaliza que a janela deve ser fechada
+
+    delJanela(nos->janela);
 }

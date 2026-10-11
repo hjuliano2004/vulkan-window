@@ -20,6 +20,8 @@
 extern const struct xdg_wm_base_listener wm_base_listener;
 extern const struct xdg_surface_listener xdg_surface_listener;
 extern const struct wl_registry_listener registry_listener;
+extern const struct xdg_toplevel_listener toplevel_listener;
+extern const struct wl_pointer_listener pointer_listener;
 
 
 void wm_base_ping(void *data, struct xdg_wm_base *wm_base, uint32_t serial);
@@ -29,6 +31,7 @@ void registry_remover(void *data, struct wl_registry *registry, uint32_t id);
 int create_shm_buffer(void *data);
 void attJanela(void *data);
 void solicitarRedesenho(Janela *janela);
+void handle_toplevel_configure(void *data,  struct xdg_toplevel *xdg_toplevel,  int32_t width, int32_t height,  struct wl_array *states);
 //void desenharJanela(Janela *janela);
 
 /* Frame callback: chamado quando compositor finaliza um frame */
@@ -36,6 +39,13 @@ extern const struct wl_callback_listener frame_listener;
 void frame_done(void *data, struct wl_callback *callback, uint32_t time);
 extern const struct wl_buffer_listener buffer_listener;
 void buffer_release(void *data, struct wl_buffer *buffer);
+
+
+
+
+//eventos de toplevel
+
+void handle_close(void *data, struct xdg_toplevel *xdg_toplevel);
 
 
 #endif
