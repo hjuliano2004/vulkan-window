@@ -15,8 +15,9 @@
 #include <poll.h>
 #include "wayland/mouse.h"
 
-
 struct pollfd *pfd = NULL;
+
+ListaJanelas *listaJanelas = NULL;
 
 sWayland *new_Wayland() {
     sWayland *wayland = malloc(sizeof(sWayland));
@@ -25,6 +26,7 @@ sWayland *new_Wayland() {
     wayland->compositor = NULL;
     wayland->shm = NULL;
     wayland->wm_base = NULL;
+    wayland->seat = NULL;
 
     wayland->display = wl_display_connect(NULL);
 
@@ -32,6 +34,8 @@ sWayland *new_Wayland() {
         fprintf(stderr, "Erro: não foi possível conectar ao Wayland.\n");
         return NULL;
     }
+
+    
 
     return wayland;
 }
@@ -67,6 +71,8 @@ Janela *new_Janela() {
     janela->nos = NULL;
     janela->pixel_format = WL_SHM_FORMAT_XRGB8888;
 
+    addJanela(janela);
+
     return janela;
 }
 
@@ -99,7 +105,8 @@ void deslWayland(sWayland *wayland) {
 
 
 Nos *new_Nos(Janela *janela, sWayland *wayland, char *titulo){
-    new_Mouse();
+    
+    
     Nos *nos = malloc(sizeof(Nos));
 
     nos->janela = janela;
@@ -107,10 +114,12 @@ Nos *new_Nos(Janela *janela, sWayland *wayland, char *titulo){
     janela->nos = nos;
 
     wayland->registry = wl_display_get_registry(wayland->display);
+    
 
     wl_registry_add_listener(wayland->registry, &registry_listener, nos);
 
     wl_display_roundtrip(wayland->display);
+    new_Mouse(wayland->seat);
 
 
     if (!wayland->compositor || !wayland->shm || !wayland->wm_base) {
@@ -129,13 +138,14 @@ Nos *new_Nos(Janela *janela, sWayland *wayland, char *titulo){
     xdg_toplevel_set_app_id(janela->toplevel, titulo);
 
     xdg_toplevel_add_listener(janela->toplevel, &toplevel_listener, nos);//adiciona listener para eventos da janela
-
-    int wl_pointer_add_listener(struct wl_pointer *pointer,const struct wl_pointer_listener *listener,void *data);   
+    wl_pointer_add_listener(pointer, &pointer_listener, mouse);   //adiciona listeners do mouse
 
 
 
     wl_surface_commit(janela->surface);
     wl_display_roundtrip(wayland->display);
+
+    
 
     return nos;
 
@@ -176,6 +186,73 @@ void controleCiclo(sWayland *wayland, Janela *janela, int miliseconds) {
     }
 }
 
+void iniciar_lista(){
+        int inicial = 5;
+        if(!listaJanelas){
+            listaJanelas = malloc(sizeof(ListaJanelas));
+            listaJanelas->janelas = calloc(inicial, sizeof(Janela *));
+
+            listaJanelas->length = 0;
+            listaJanelas->size = inicial;
+    }
+
+}
+
+void addJanela(Janela *janela){
+
+    if(!janela){
+        printf("tentativa de adicionar janela nula à lista de janelas\n");
+
+        return;
+    }
+
+    iniciar_lista();
+
+    if(listaJanelas->length == listaJanelas->size){
+
+        Janela **listaNova = malloc((listaJanelas->size + 1) * sizeof(Janela *));
+
+        for(int i=0;i<listaJanelas->length;i++){
+            listaNova[i] = listaJanelas->janelas[i];
+        }
+
+        free(listaJanelas->janelas);
+        listaJanelas->janelas = listaNova;
+        listaJanelas->size++;
+    }
+
+    listaJanelas->janelas[listaJanelas->length] = janela;
+    listaJanelas->length++;
+}
+
+void liberaLista(){
+    if(!listaJanelas){
+        printf("lista de janelas nula\n");
+        return;
+    }
+
+    int lengthInicial = listaJanelas->length;
+    Janela *lista[lengthInicial];
+    int leng = 0;
+
+    for(int i=0;i<listaJanelas->length;i++){
+        lista[i] = NULL;
+        if(listaJanelas->janelas[i]->cls == 0){
+            delJanela(listaJanelas->janelas[i]);
+            //listaJanelas->janelas[i] == NULL;
+            listaJanelas->length--;
+        }else{
+            lista[leng] = listaJanelas->janelas[i];
+            leng++;
+        }
+    }
+
+    for(int i=0;i<lengthInicial;i++){
+        listaJanelas->janelas[i] = lista[i];
+    }
+
+
+}
 
 
 
@@ -192,7 +269,7 @@ void controleCiclo(sWayland *wayland, Janela *janela, int miliseconds) {
 
 
 
-/*TODO:  esses  comandos um pos o outro renderizam a janela sem travar o loop
+/*TODO:  esses  comandos um apos o outro renderizam a janela sem travar o loop
 
         wl_display_roundtrip(wayland->display);
         wl_display_dispatch_pending(wayland->display);

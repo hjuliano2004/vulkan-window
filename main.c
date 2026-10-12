@@ -30,7 +30,7 @@ int main(void) {
     Janela *janela2 = new_Janela();
     sWayland *wayland = new_Wayland();
     Nos *nos = new_Nos(janela, wayland, "janela de teste");
-    Nos *nos2 = new_Nos(janela2, wayland, "janela 2");
+    new_Nos(janela2, wayland, "janela 2");
 
 
     uint32_t *pixel = (uint32_t *)janela->shm_data;
@@ -46,14 +46,7 @@ int main(void) {
         return 1;
     }
 
-    /*
-   
-
-    janela2->novoHeight = 720;
-    create_shm_buffer(nos2);
-*/
-
-    setTimeOut(redimensionar, nos, 2);
+    setTimeOut(redimensionar, nos, 2);//testando redimensionamento instantaneo
 
     
 
@@ -72,8 +65,10 @@ int main(void) {
         rodar();
     }
 
-    delJanela(janela);
-    delJanela(janela2);
+    //delJanela(janela);
+    //delJanela(janela2);
+
+    liberaLista();
     deslWayland(wayland);
 
     return 0;

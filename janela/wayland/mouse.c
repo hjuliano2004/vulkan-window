@@ -7,10 +7,14 @@
 #include <stdlib.h>
 
 Mouse *mouse = NULL;
+struct wl_pointer *pointer = NULL;
 
-void new_Mouse(){
+void new_Mouse(struct wl_seat *seat){
     if(!mouse){
         mouse = malloc(sizeof(Mouse));
+    }
+    if(!pointer){
+        pointer = wl_seat_get_pointer(seat);
     }
 };
 
@@ -27,17 +31,14 @@ void pointer_button(void *data, struct wl_pointer *pointer, uint32_t serial, uin
 
     mouse->ultimo_serial = serial;
 
-    if(button == BTN_LEFT){
+    if(button == BTN_LEFT && (state == WL_POINTER_BUTTON_STATE_PRESSED)){
         mouse->botao_esquerdo = (state == WL_POINTER_BUTTON_STATE_PRESSED);
-        printf("clique esquerdo");
+        printf("clique esquerdo\n");
     }
     if(button == BTN_RIGHT){
         mouse->botao_direito = (state == WL_POINTER_BUTTON_STATE_PRESSED);
     }
 }
-
-
-
         /*
         valores possiveis
         WL_POINTER_BUTTON_STATE_RELEASED

@@ -25,8 +25,10 @@ const struct xdg_surface_listener xdg_surface_listener = {
     .configure = xdg_surface_configure,
 };
 
-const struct wl_registry_listener registry_listener = {registry_handler,
-                                                       registry_remover};
+const struct wl_registry_listener registry_listener = {
+    registry_handler,
+    registry_remover
+};
 
 const struct wl_buffer_listener buffer_listener = {
     .release = buffer_release,
@@ -38,11 +40,11 @@ const struct xdg_toplevel_listener toplevel_listener = {
 };
 
 const struct wl_pointer_listener pointer_listener = {
-    //.enter  = pointer_enter,
-    //.leave  = pointer_leave,
+    .enter  = pointer_enter,
+    .leave  = pointer_leave,
     .motion = pointer_motion,
     .button = pointer_button,
-    //.axis   = pointer_axis,
+    .axis   = pointer_axis,
 };
 
 
@@ -55,23 +57,36 @@ void wm_base_ping(void *data, struct xdg_wm_base *wm_base, uint32_t serial) {
     xdg_wm_base_pong(wm_base, serial);
 }
 
-void registry_handler(void *data, struct wl_registry *registry, uint32_t id,
-                      const char *interface, uint32_t version) {
+void registry_handler(void *data, struct wl_registry *registry, uint32_t id,  const char *interface, uint32_t version) {
 
     Nos *nos = data;
     sWayland *wayland = nos->wayland;
 
     if (strcmp(interface, "wl_compositor") == 0) {
-        wayland->compositor =
-            wl_registry_bind(registry, id, &wl_compositor_interface, 1);
-    } else if (strcmp(interface, "wl_shm") == 0) {
+        wayland->compositor = wl_registry_bind(registry, id, &wl_compositor_interface, 1);
+    } else 
+    
+    if (strcmp(interface, "wl_shm") == 0) {
         wayland->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
-    } else if (strcmp(interface, "xdg_wm_base") == 0) {
-        wayland->wm_base =
-            wl_registry_bind(registry, id, &xdg_wm_base_interface, 1);
+    } else
+    
+    if (strcmp(interface, "xdg_wm_base") == 0) {
+        wayland->wm_base = wl_registry_bind(registry, id, &xdg_wm_base_interface, 1);
         xdg_wm_base_add_listener(wayland->wm_base, &wm_base_listener, NULL);
     }
+
+    if (strcmp(interface, "wl_seat") == 0) {
+        wayland->seat = wl_registry_bind(registry, id, &wl_seat_interface, 1);
 }
+
+
+}
+
+
+
+
+
+
 
 void xdg_surface_configure(void *data, struct xdg_surface *xdg_surface,
                            uint32_t serial) {
@@ -230,11 +245,40 @@ void handle_toplevel_configure(void *data,  struct xdg_toplevel *xdg_toplevel,  
         nos->janela->height = height;
 }
 
+
+//------------------
+
+void registry_global(void *data, struct wl_registry *registry, uint32_t name, const struct wl_interface *interface, uint32_t version)   {
+
+    sWayland *wayland = data;
+
+    if(strcmp(interface->name, wl_seat_interface.name) == 0){
+        
+        wayland->seat = wl_registry_bind(registry,  name, &wl_seat_interface, 1);
+    }
+}
+
+
+
 // evento de fechar por clique
 
 void handle_close(void *data, struct xdg_toplevel *xdg_toplevel) {
     Nos *nos = data;
     nos->janela->cls = 0; // sinaliza que a janela deve ser fechada
 
-    delJanela(nos->janela);
+    //delJanela(nos->janela);//TODO: preciso criar uma lista de janelas e uma função pra liberar as janelas desligadas
+
+    liberaLista();
+}
+
+void pointer_enter(void *data, struct wl_pointer *pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y){
+//TODO: ficará vazio até eu descobrir a necessidade de fazer algo nessa situação
+}
+
+void pointer_leave(void *data, struct wl_pointer *pointer, uint32_t serial, struct wl_surface *surface){
+//TODO: ficará vazio até eu descobrir a necessidade de fazer algo nessa situação
+}
+
+void pointer_axis(void *data, struct wl_pointer *pointer, uint32_t time, uint32_t axis, wl_fixed_t value){
+//TODO: ficará vazio até eu descobrir a necessidade de fazer algo nessa situação
 }

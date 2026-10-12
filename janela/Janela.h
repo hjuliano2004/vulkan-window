@@ -23,6 +23,7 @@ typedef struct sWayland {
     struct wl_compositor *compositor;
     struct wl_shm *shm;
     struct xdg_wm_base *wm_base;
+    struct wl_seat *seat;
 } sWayland;
 
 typedef struct Janela {
@@ -54,11 +55,20 @@ typedef struct Janela {
     uint32_t pixel_format;
 } Janela;
 
+typedef struct{
+    Janela **janelas;
+    int size;
+    int length;
+
+}ListaJanelas;
+
 typedef struct Nos {
     Janela *janela;
     sWayland *wayland;
 
 }Nos;
+
+extern ListaJanelas *listaJanelas;
 
 void delJanela(Janela *janela);
 void deslWayland(sWayland *wayland);
@@ -67,6 +77,10 @@ Janela *new_Janela();
 Nos *new_Nos(Janela *janela, sWayland *wayland, char *titulo);
 struct pollfd *gPfd(sWayland *wayland);
 void controleCiclo(sWayland *wayland, Janela *janela, int miliseconds);
+void iniciar_lista();
+void iniciar_lista();
+void addJanela(Janela *janela);
+void liberaLista();
 
 
 
