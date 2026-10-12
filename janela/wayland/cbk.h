@@ -33,9 +33,7 @@ void attJanela(void *data);
 void solicitarRedesenho(Janela *janela);
 void handle_toplevel_configure(void *data,  struct xdg_toplevel *xdg_toplevel,  int32_t width, int32_t height,  struct wl_array *states);
 void registry_global(void *data, struct wl_registry *registry, uint32_t name, const struct wl_interface *interface, uint32_t version);
-void pointer_enter(void *data, struct wl_pointer *pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y);
-void pointer_leave(void *data, struct wl_pointer *pointer, uint32_t serial, struct wl_surface *surface);
-void pointer_axis(void *data, struct wl_pointer *pointer, uint32_t time, uint32_t axis, wl_fixed_t value);
+
 //void desenharJanela(Janela *janela);
 
 /* Frame callback: chamado quando compositor finaliza um frame */

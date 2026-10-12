@@ -268,17 +268,6 @@ void handle_close(void *data, struct xdg_toplevel *xdg_toplevel) {
 
     //delJanela(nos->janela);//TODO: preciso criar uma lista de janelas e uma função pra liberar as janelas desligadas
 
-    liberaLista();
+    //liberaLista();
 }
 
-void pointer_enter(void *data, struct wl_pointer *pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y){
-//TODO: ficará vazio até eu descobrir a necessidade de fazer algo nessa situação
-}
-
-void pointer_leave(void *data, struct wl_pointer *pointer, uint32_t serial, struct wl_surface *surface){
-//TODO: ficará vazio até eu descobrir a necessidade de fazer algo nessa situação
-}
-
-void pointer_axis(void *data, struct wl_pointer *pointer, uint32_t time, uint32_t axis, wl_fixed_t value){
-//TODO: ficará vazio até eu descobrir a necessidade de fazer algo nessa situação
-}

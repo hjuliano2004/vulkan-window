@@ -19,9 +19,6 @@ void redimensionar(void *arg){
     nos->janela->novoWidth = 1920;
     create_shm_buffer(nos);
     solicitarRedesenho(nos->janela);
-    
-    printf("print estourado\n");
-
 }
 
 int main(void) {
@@ -63,12 +60,13 @@ int main(void) {
         controleCiclo(wayland, janela, FPS);
 
         rodar();
+        liberaLista();
     }
 
     //delJanela(janela);
     //delJanela(janela2);
 
-    liberaLista();
+    liberaLista();//destroi lista de janelas criadas
     deslWayland(wayland);
 
     return 0;

@@ -53,6 +53,7 @@ Janela *new_Janela() {
     janela->stride     = 0;
     janela->pixl       = NULL;
     janela->shm_data   = NULL;
+    janela->data_antigo = NULL;
     janela->title      = NULL;
     janela->opacidade  = 0;
     janela->cls        = -1;   // -1 é comum pra indicar "sem arquivo válido"
@@ -225,33 +226,30 @@ void addJanela(Janela *janela){
     listaJanelas->length++;
 }
 
-void liberaLista(){
-    if(!listaJanelas){
+    void liberaLista(){
+    if (!listaJanelas){
         printf("lista de janelas nula\n");
         return;
     }
 
-    int lengthInicial = listaJanelas->length;
-    Janela *lista[lengthInicial];
-    int leng = 0;
+    int novoLength = 0;
 
-    for(int i=0;i<listaJanelas->length;i++){
-        lista[i] = NULL;
-        if(listaJanelas->janelas[i]->cls == 0){
-            delJanela(listaJanelas->janelas[i]);
-            //listaJanelas->janelas[i] == NULL;
-            listaJanelas->length--;
+    for (int i = 0; i < listaJanelas->length; i++){
+        Janela *janela = listaJanelas->janelas[i];
+
+        if (janela->cls == 0){
+            delJanela(janela);
         }else{
-            lista[leng] = listaJanelas->janelas[i];
-            leng++;
+            listaJanelas->janelas[novoLength] = janela;
+            novoLength++;
         }
     }
 
-    for(int i=0;i<lengthInicial;i++){
-        listaJanelas->janelas[i] = lista[i];
+    for (int i = novoLength; i < listaJanelas->size; i++){
+        listaJanelas->janelas[i] = NULL;
     }
 
-
+    listaJanelas->length = novoLength;
 }
 
 

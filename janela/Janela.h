@@ -36,6 +36,7 @@ typedef struct Janela {
     uint32_t stride;    // bytes por linha (width * 4, por exemplo)
     uint8_t *pixl;      // ponteiro para pixels na memória compartilhada
     void *shm_data;     // ponteiro mapeado do tmpfile
+    void *data_antigo;  // data anterior
     char *title;        // título da janela
     uint8_t opacidade;  // transparência/opacidade
     int cls;            // descriptor do tmpfile (shm)
