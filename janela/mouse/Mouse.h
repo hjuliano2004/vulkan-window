@@ -1,10 +1,11 @@
 #ifndef MOUSE_H
 #define MOUSE_H
 
-#include <stdbool.h>
 #include <stdint.h>
 #include <wayland-client.h>
-#include "../Janela.h"
+#include <stdbool.h>
+
+extern const struct wl_pointer_listener pointer_listener;
 
 typedef struct {
     double x;
@@ -14,6 +15,7 @@ typedef struct {
 
     bool botao_esquerdo;
     bool botao_direito;
+    bool dentro;
     struct wl_surface *surface;
 } Mouse;
 
@@ -27,20 +29,10 @@ void pointer_button(void *data, struct wl_pointer *pointer, uint32_t serial, uin
 void pointer_enter(void *data, struct wl_pointer *pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y);
 void pointer_leave(void *data, struct wl_pointer *pointer, uint32_t serial, struct wl_surface *surface);
 void pointer_axis(void *data, struct wl_pointer *pointer, uint32_t time, uint32_t axis, wl_fixed_t value);
-Janela *janela_alvo(Mouse *mouse);
+//Janela *janela_alvo(Mouse *mouse);
 
-
-
-
-
-
+//void direita(uint32_t button, uint32_t state);
+//void esquerda(uint32_t button, uint32_t state);
 
 
 #endif
-
-
-/*
-BTN_LEFT   = 0x110
-BTN_RIGHT  = 0x111
-BTN_MIDDLE = 0x112
-*/

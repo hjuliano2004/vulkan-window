@@ -1,30 +1,11 @@
 #ifndef JANELA_H
 #define JANELA_H
 
-#define _POSIX_C_SOURCE 200809L
-#include "xdg-shell-client-protocol.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <stdint.h>
-#include <errno.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include "protocolo/xdg-shell-client-protocol.h"
 #include <wayland-client.h>
+#include <stdbool.h>
 
-
-extern struct pollfd *pfd;//responsável pelo polling
-
-typedef struct sWayland {
-    struct wl_display *display;
-    struct wl_registry *registry;
-    struct wl_compositor *compositor;
-    struct wl_shm *shm;
-    struct xdg_wm_base *wm_base;
-    struct wl_seat *seat;
-} sWayland;
 
 typedef struct Janela {
     // Estado interno
@@ -38,8 +19,8 @@ typedef struct Janela {
     void *shm_data;     // ponteiro mapeado do tmpfile
     void *data_antigo;  // data anterior
     char *title;        // título da janela
-    uint8_t opacidade;  // transparência/opacidade
     int cls;            // descriptor do tmpfile (shm)
+    bool aberto;
     uint8_t maximized;  // estado maximizado
     uint8_t fullscreen; // estado fullscreen
 
@@ -53,38 +34,37 @@ typedef struct Janela {
     int frame_pronto; // indica que o callback de frame autorizou o próximo desenho
     int redraw_requested; // pedido de redesenho feito pela aplicação
     struct Nos *nos; // contexto usado para enviar o buffer ao Wayland
+    struct wp_presentation *presentation;
     uint32_t pixel_format;
 } Janela;
 
-typedef struct{
-    Janela **janelas;
-    int size;
-    int length;
-
-}ListaJanelas;
+typedef struct sWayland {
+    struct wl_display *display;
+    struct wl_registry *registry;
+    struct wl_compositor *compositor;
+    struct wl_shm *shm;
+    struct xdg_wm_base *wm_base;
+    struct wl_seat *seat;
+} sWayland;
 
 typedef struct Nos {
     Janela *janela;
     sWayland *wayland;
 }Nos;
 
-extern ListaJanelas *listaJanelas;
+sWayland *new_Wayland();
+Janela *new_Janela(char *titulo);
 
 void delJanela(Janela *janela);
 void deslWayland(sWayland *wayland);
-sWayland *new_Wayland();
-Janela *new_Janela();
-Nos *new_Nos(Janela *janela, sWayland *wayland, char *titulo);
+
+Nos *new_Nos(Janela *janela, sWayland *wayland);
 struct pollfd *gPfd(sWayland *wayland);
-void controleCiclo(sWayland *wayland, Janela *janela, int miliseconds);
 void iniciar_lista();
 void addJanela(Janela *janela);
 void liberaLista();
 
 
-
-
-// Formato: 0xAARRGGBB (Alpha, Red, Green, Blue)
 
 #define RED     0xFFFF0000
 #define GREEN   0xFF00FF00
@@ -98,7 +78,6 @@ void liberaLista();
 #define ORANGE  0xFFFFA500
 #define PURPLE  0xFF800080
 #define BROWN   0xFFA52A2A
-
 
 
 

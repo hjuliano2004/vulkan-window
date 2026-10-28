@@ -1,7 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "janela/Janela.h"
 #include "janela/wayland/cbk.h"
-#include "janela/xdg-shell-client-protocol.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,16 +17,17 @@ void redimensionar(void *arg){
 
     nos->janela->novoWidth = 1920;
     create_shm_buffer(nos);
-    solicitarRedesenho(nos->janela);
+    //solicitarRedesenho(nos->janela);
+     attJanela(nos->janela);
 }
 
 int main(void) {
 
-    Janela *janela = new_Janela();
-    Janela *janela2 = new_Janela();
+    Janela *janela = new_Janela("janela de teste");
+    Janela *janela2 = new_Janela("janela 2");
     sWayland *wayland = new_Wayland();
-    Nos *nos = new_Nos(janela, wayland, "janela de teste");
-    new_Nos(janela2, wayland, "janela 2");
+    Nos *nos = new_Nos(janela, wayland);
+    new_Nos(janela2, wayland);
 
 
     uint32_t *pixel = (uint32_t *)janela->shm_data;
@@ -47,27 +47,24 @@ int main(void) {
 
     
 
-    double FPS = 1000/60;
+    //double FPS = 1000/60;
 
-    solicitarRedesenho(janela);
-    solicitarRedesenho(janela2);
+    attJanela(janela);
+    attJanela(janela2);
     while (janela->cls != 0) {
         wl_display_dispatch_pending(wayland->display);
         // wl_display_dispatch(wayland->display);
         wl_display_flush(wayland->display);
 
-
-        controleCiclo(wayland, janela, FPS);
-
         rodar();
-        liberaLista();
+        //liberaLista();
     }
 
     //delJanela(janela);
     //delJanela(janela2);
 
-    liberaLista();//destroi lista de janelas criadas
-    deslWayland(wayland);
+    //liberaLista();//destroi lista de janelas criadas
+    //deslWayland(wayland);
 
     return 0;
 }
