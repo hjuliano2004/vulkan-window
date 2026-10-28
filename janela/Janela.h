@@ -66,7 +66,6 @@ typedef struct{
 typedef struct Nos {
     Janela *janela;
     sWayland *wayland;
-
 }Nos;
 
 extern ListaJanelas *listaJanelas;
@@ -78,7 +77,6 @@ Janela *new_Janela();
 Nos *new_Nos(Janela *janela, sWayland *wayland, char *titulo);
 struct pollfd *gPfd(sWayland *wayland);
 void controleCiclo(sWayland *wayland, Janela *janela, int miliseconds);
-void iniciar_lista();
 void iniciar_lista();
 void addJanela(Janela *janela);
 void liberaLista();

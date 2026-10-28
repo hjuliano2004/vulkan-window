@@ -88,8 +88,7 @@ void registry_handler(void *data, struct wl_registry *registry, uint32_t id,  co
 
 
 
-void xdg_surface_configure(void *data, struct xdg_surface *xdg_surface,
-                           uint32_t serial) {
+void xdg_surface_configure(void *data, struct xdg_surface *xdg_surface,   uint32_t serial) {
     Nos *nos = data;
     Janela *janela = nos->janela;
 
@@ -116,8 +115,10 @@ void frame_done(void *data, struct wl_callback *callback, uint32_t time) {
     Janela *janela = nos->janela;
 
     /* Cada callback de frame é de uso único. */
-    if (callback)
+    if (callback){
         wl_callback_destroy(callback);
+    }
+
     janela->frame_callback = NULL;
     janela->frame_pronto = 1;
 
@@ -136,8 +137,10 @@ void buffer_release(void *data, struct wl_buffer *buffer) {
     Janela *janela = data;
 
     janela->buffer_liberado = 1;
-    if (janela->frame_pronto && janela->redraw_requested)
+    if (janela->frame_pronto && janela->redraw_requested){
         solicitarRedesenho(janela);
+    }
+       
 }
 
 /*
@@ -180,22 +183,24 @@ int create_shm_buffer(void *data) {//cria o buffer e redimensiona ele
     janela->width = janela->novoWidth;
     janela->height = janela->novoHeight;
 
-    janela->stride = (uint32_t)janela->width * 4;
-    size_t size = (size_t)janela->stride * janela->height;
-    char template[] = "/tmp/wayland-shm-XXXXXX";
-    janela->cls = mkstemp(template);
-    if (janela->cls < 0)
-        return -1;
-    unlink(template);
-    if (ftruncate(janela->cls, size) < 0)
-        return -1;
-    janela->shm_data =
-        mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, janela->cls, 0);
+   janela->stride = (uint32_t)janela->width * 4;
+size_t size = (size_t)janela->stride * janela->height;
+char template[] = "/tmp/wayland-shm-XXXXXX";
+janela->cls = mkstemp(template);
+if (janela->cls < 0) {
+    return -1;
+}
+unlink(template);
+if (ftruncate(janela->cls, size) < 0) {
+    return -1;
+}
+janela->shm_data =
+    mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, janela->cls, 0);
 
-    if (janela->shm_data == MAP_FAILED) {
-        janela->shm_data = NULL;
-        return -1;
-    }
+if (janela->shm_data == MAP_FAILED) {
+    janela->shm_data = NULL;
+    return -1;
+}   
 
     janela->pixl = janela->shm_data;
 
@@ -235,7 +240,7 @@ void handle_toplevel_configure(void *data,  struct xdg_toplevel *xdg_toplevel,  
     Nos *nos = data;
 
     /*
-     * width/height podem ser 0, especialmente
+     * width/height podem acidentalmente ser 0, especialmente
      * quando o compositor não quer impor um tamanho.
      */
     if (width > 0)

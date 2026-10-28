@@ -55,7 +55,6 @@ Janela *new_Janela() {
     janela->shm_data   = NULL;
     janela->data_antigo = NULL;
     janela->title      = NULL;
-    janela->opacidade  = 0;
     janela->cls        = -1;   // -1 é comum pra indicar "sem arquivo válido"
     janela->maximized  = 0;
     janela->fullscreen = 0;

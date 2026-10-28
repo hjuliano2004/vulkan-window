@@ -22,6 +22,8 @@ extern const struct xdg_surface_listener xdg_surface_listener;
 extern const struct wl_registry_listener registry_listener;
 extern const struct xdg_toplevel_listener toplevel_listener;
 extern const struct wl_pointer_listener pointer_listener;
+extern const struct wl_callback_listener frame_listener;
+extern const struct wl_buffer_listener buffer_listener;
 
 
 void wm_base_ping(void *data, struct xdg_wm_base *wm_base, uint32_t serial);
@@ -37,9 +39,9 @@ void registry_global(void *data, struct wl_registry *registry, uint32_t name, co
 //void desenharJanela(Janela *janela);
 
 /* Frame callback: chamado quando compositor finaliza um frame */
-extern const struct wl_callback_listener frame_listener;
+
 void frame_done(void *data, struct wl_callback *callback, uint32_t time);
-extern const struct wl_buffer_listener buffer_listener;
+
 void buffer_release(void *data, struct wl_buffer *buffer);
 
 
