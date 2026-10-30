@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <wayland-client.h>
 #include <stdbool.h>
+#include "../../janela/Janela.h"
 
 extern const struct wl_pointer_listener pointer_listener;
 
@@ -17,12 +18,14 @@ typedef struct {
     bool botao_direito;
     bool dentro;
     struct wl_surface *surface;
+
+    Janela *janela;//TODO: remover janela unica futuramente
 } Mouse;
 
 extern Mouse *mouse;
 extern struct wl_pointer *pointer;
 
-void new_Mouse(struct wl_seat *seat);
+void new_Mouse(struct wl_seat *seat, Janela *janela);
 void pointer_motion(void *data, struct wl_pointer *pointer,   uint32_t time, wl_fixed_t sx, wl_fixed_t sy);
 void pointer_button(void *data, struct wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state);
 

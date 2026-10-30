@@ -5,6 +5,8 @@
 #include <stdlib.h> 
 #include <stddef.h> 
 #include <stdio.h>
+#include "../../janela/Janela.h"
+#include "../protocolo/xdg-shell-client-protocol.h"
 
 const struct wl_pointer_listener pointer_listener = {
     .enter = pointer_enter,
@@ -17,7 +19,7 @@ const struct wl_pointer_listener pointer_listener = {
 Mouse *mouse = NULL;
 struct wl_pointer *pointer = NULL;
 
-void new_Mouse(struct wl_seat *seat){
+void new_Mouse(struct wl_seat *seat, Janela *janela){
 
     if(seat == NULL){
         printf("seat nullo em new mouse\n");
@@ -26,10 +28,12 @@ void new_Mouse(struct wl_seat *seat){
 
     if(!mouse){
         mouse = malloc(sizeof(Mouse));
+         mouse->janela = janela;//TODO: remover janela unica futuramente
     }
     if(!pointer){
         pointer = wl_seat_get_pointer(seat);
     }
+   
 };
 
 void pointer_motion(void *data, struct wl_pointer *pointer, uint32_t time, wl_fixed_t sx, wl_fixed_t sy){
@@ -56,10 +60,15 @@ static void direita(uint32_t button, uint32_t state){//eventos clique direito
 
 }
 
-static void esquerda(uint32_t button, uint32_t state){//eventos clique esquerdo
+static void esquerda(uint32_t button, uint32_t state, uint32_t serial, Janela *janela){//eventos clique esquerdo
 
     if (button == BTN_LEFT && (state == WL_POINTER_BUTTON_STATE_PRESSED)){
         mouse->botao_esquerdo = (state == WL_POINTER_BUTTON_STATE_PRESSED);
+        //mouse->ultimo_serial = serial;
+        
+        if(mouse->y < 30){
+            xdg_toplevel_move(janela->toplevel, janela->nos->wayland->seat, serial);
+        }
         //printf("x: %f, y: %f\n", mouse->x, mouse->y);
     }
 
@@ -75,7 +84,7 @@ void pointer_button(void *data, struct wl_pointer *pointer, uint32_t serial, uin
     mouse->ultimo_serial = serial;
 
     direita(button, state);
-    esquerda(button, state);
+    esquerda(button, state, serial, mouse->janela);
 }
 
 void pointer_enter(void *data, struct wl_pointer *pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y){
@@ -112,3 +121,9 @@ Janela *janela_alvo(Mouse *mouse){//em caso de existir mais de uma janela, essa 
     return NULL;
     
 }*/
+
+
+//void moveJanela(Nos *nos){
+
+    //xdg_toplevel_move(nos->janela->toplevel, nos->wayland->seat, mouse->ultimo_serial);
+//}

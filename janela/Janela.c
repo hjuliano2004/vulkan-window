@@ -73,7 +73,7 @@ static int incrementos(Nos *nos){
     xdg_toplevel_set_title(janela->toplevel, janela->title);//titulo na barra de tarefas
     xdg_toplevel_set_app_id(janela->toplevel, janela->title);
 
-    new_Mouse(wayland->seat);
+    new_Mouse(wayland->seat, janela);
     int listener = xdg_toplevel_add_listener(janela->toplevel, &toplevel_listener, janela->nos);//adiciona listener para eventos da janela
     
     if(listener == -1){

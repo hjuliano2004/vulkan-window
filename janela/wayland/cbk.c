@@ -69,82 +69,165 @@ void xdg_surface_configure(void *data, struct xdg_surface *xdg_surface, uint32_t
 
     xdg_surface_ack_configure(xdg_surface, serial);
 
-    if (!janela->buffer) {
-        if (create_shm_buffer(nos) == 0) {
-            // O buffer nasce livre e o primeiro frame pode ser enviado agora.
-            janela->buffer_liberado = 1;
-            janela->frame_pronto = 1;
-            janela->redraw_requested = 1;
-            attJanela(nos);
-        }
+    bool primeiro_buffer = janela->buffer == NULL;
+    janela->redraw_requested = 1;
+
+    int resultado = create_shm_buffer(nos);
+    if (resultado < 0)
+        return;
+
+    if (primeiro_buffer) {
+        janela->buffer_liberado = 1;
+        janela->frame_pronto = 1;
     }
+
+    if (resultado == 0 && janela->frame_pronto && janela->buffer_liberado)
+        attJanela(nos);
 };
 
 void registry_remover(void *data, struct wl_registry *registry, uint32_t id){
 
 };
 
-static void limpa_buffer(Janela *janela){
+static int limpa_buffer(Janela *janela){
+    if (janela->buffer) {
+        wl_buffer_destroy(janela->buffer);
+        janela->buffer = NULL;
+    }
+
     if (janela->shm_data) {
-        munmap(janela->shm_data, (size_t)janela->stride * janela->height);
+        size_t size = (size_t)janela->stride * (size_t)janela->height;
+        if (munmap(janela->shm_data, size) < 0) {
+            perror("munmap do buffer Wayland");
+            return -1;
+        }
         janela->shm_data = NULL;
-    }
-}
-
-static int ver_tamanho(Janela *janela){
-
-    if (janela->novoWidth <= 0 || janela->novoHeight <= 0) {
-        janela->cls = 0;
-        printf("tamanho de janela inválido\n");
-        return -1;
+        janela->pixl = NULL;
     }
 
-    janela->width = janela->novoWidth;
-    janela->height = janela->novoHeight;
+    if (janela->cls >= 0) {
+        if (close(janela->cls) < 0) {
+            perror("close do arquivo shm Wayland");
+            janela->cls = -1;
+            return -1;
+        }
+        janela->cls = -1;
+    }
 
+    janela->stride = 0;
     return 0;
 }
 
-
 int create_shm_buffer(void *data){
 
+    if (!data) {
+        fprintf(stderr, "create_shm_buffer: contexto nulo\n");
+        return -1;
+    }
+
     Nos *nos = data;
+    if (!nos->janela) {
+        fprintf(stderr, "create_shm_buffer: janela nula\n");
+        return -1;
+    }
+
     Janela *janela = nos->janela;
     sWayland *wayland = nos->wayland;
-    
-    limpa_buffer(janela);
+    int width = janela->novoWidth;
+    int height = janela->novoHeight;
 
-    if(ver_tamanho(janela)!= 0){return -1;}
+    if (!wayland || !wayland->shm) {
+        fprintf(stderr, "create_shm_buffer: wl_shm indisponível\n");
+        return -1;
+    }
+    if (width <= 0 || height <= 0) {
+        fprintf(stderr, "create_shm_buffer: tamanho inválido (%d x %d)\n", width, height);
+        return -1;
+    }
+    if (janela->buffer && width == janela->width && height == janela->height)
+        return 0;
+    if (janela->buffer && !janela->buffer_liberado) {
+        janela->redraw_requested = 1;
+        return 1;
+    }
+    if ((uint32_t)width > UINT32_MAX / 4) {
+        fprintf(stderr, "create_shm_buffer: largura excede o limite do stride\n");
+        return -1;
+    }
 
-    janela->stride = (uint32_t)janela->width * 4;
-    size_t size = (size_t)janela->stride * janela->height;
+    uint32_t stride = (uint32_t)width * 4;
+    if ((size_t)stride > SIZE_MAX / (size_t)height) {
+        fprintf(stderr, "create_shm_buffer: tamanho do buffer excede SIZE_MAX\n");
+        return -1;
+    }
+    size_t size = (size_t)stride * (size_t)height;
+    if (size > INT32_MAX) {
+        fprintf(stderr, "create_shm_buffer: tamanho excede o limite do protocolo Wayland\n");
+        return -1;
+    }
+
     char template[] = "/tmp/wayland-shm-XXXXXX";
-    janela->cls = mkstemp(template);
-    if (janela->cls < 0) {
+    int fd = mkstemp(template);
+    if (fd < 0) {
+        perror("mkstemp para buffer Wayland");
         return -1;
     }
     unlink(template);
-    if (ftruncate(janela->cls, size) < 0) {
+
+    if (ftruncate(fd, (off_t)size) < 0) {
+        perror("ftruncate do buffer Wayland");
+        close(fd);
         return -1;
     }
-    janela->shm_data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, janela->cls, 0);
 
-    if (janela->shm_data == MAP_FAILED) {
-        janela->shm_data = NULL;
+    void *shm_data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (shm_data == MAP_FAILED) {
+        perror("mmap do buffer Wayland");
+        close(fd);
         return -1;
     }   
 
-    janela->pixl = janela->shm_data;
-
     struct wl_shm_pool *pool =
-        wl_shm_create_pool(wayland->shm, janela->cls, size);
-    janela->buffer =
-        wl_shm_pool_create_buffer(pool, 0, janela->width, janela->height,
-                                  janela->stride, janela->pixel_format);
+        wl_shm_create_pool(wayland->shm, fd, (int32_t)size);
+    if (!pool) {
+        fprintf(stderr, "create_shm_buffer: wl_shm_create_pool falhou\n");
+        munmap(shm_data, size);
+        close(fd);
+        return -1;
+    }
+
+    struct wl_buffer *buffer =
+        wl_shm_pool_create_buffer(pool, 0, width, height, stride, janela->pixel_format);
 
     wl_shm_pool_destroy(pool);
-    wl_buffer_add_listener(janela->buffer, &buffer_listener, janela);
+    if (!buffer) {
+        fprintf(stderr, "create_shm_buffer: wl_shm_pool_create_buffer falhou\n");
+        munmap(shm_data, size);
+        close(fd);
+        return -1;
+    }
+    if (wl_buffer_add_listener(buffer, &buffer_listener, janela) < 0) {
+        fprintf(stderr, "create_shm_buffer: não foi possível registrar listener do buffer\n");
+        wl_buffer_destroy(buffer);
+        munmap(shm_data, size);
+        close(fd);
+        return -1;
+    }
 
+    if (limpa_buffer(janela) < 0) {
+        wl_buffer_destroy(buffer);
+        munmap(shm_data, size);
+        close(fd);
+        return -1;
+    }
+
+    janela->width = width;
+    janela->height = height;
+    janela->stride = stride;
+    janela->cls = fd;
+    janela->shm_data = shm_data;
+    janela->pixl = shm_data;
+    janela->buffer = buffer;
 
     return 0;
 };
@@ -156,11 +239,12 @@ void handle_toplevel_configure(void *data,  struct xdg_toplevel *xdg_toplevel,  
      * width/height podem ser acidentalmente 0, especialmente
      * quando o compositor não quer impor um tamanho.
      */
+    /**/
     if (width > 0)
-        nos->janela->width = width;
+        nos->janela->novoWidth = width;
 
     if (height > 0)
-        nos->janela->height = height;
+        nos->janela->novoHeight = height;
 };
 
 void registry_global(void *data, struct wl_registry *registry, uint32_t name, const struct wl_interface *interface, uint32_t version){
@@ -195,12 +279,19 @@ void frame_done(void *data, struct wl_callback *callback, uint32_t time){
 
 
 void buffer_release(void *data, struct wl_buffer *buffer){
-    (void)buffer;
     Janela *janela = data;
 
+    if (buffer != janela->buffer)
+        return;
+
     janela->buffer_liberado = 1;
+    if (janela->novoWidth != janela->width || janela->novoHeight != janela->height) {
+        int resultado = create_shm_buffer(janela->nos);
+        if (resultado < 0)
+            return;
+    }
+
     if (janela->frame_pronto && janela->redraw_requested){
-        ///solicitarRedesenho(janela);
         attJanela(janela->nos);
     }
 };
@@ -220,6 +311,10 @@ void attJanela(void *data){
 
     if (!janela->buffer || !janela->buffer_liberado)
         return;
+    if (janela->width != janela->novoWidth || janela->height != janela->novoHeight) {
+        janela->redraw_requested = 1;
+        return;
+    }
 
     // O callback precisa ser registrado antes do commit que ele acompanha.
 
