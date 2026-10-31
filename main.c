@@ -1,7 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "janela/Janela.h"
 #include "janela/wayland/cbk.h"
-#include "janela/xdg-shell-client-protocol.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
