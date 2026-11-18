@@ -5,6 +5,7 @@
 #include "protocolo/xdg-shell-client-protocol.h"
 #include <wayland-client.h>
 #include <stdbool.h>
+#include "teclado/Teclado.h"
 
 
 typedef struct Janela {
@@ -45,6 +46,7 @@ typedef struct sWayland {
     struct wl_shm *shm;
     struct xdg_wm_base *wm_base;
     struct wl_seat *seat;
+    struct keyboard_state teclado;
 } sWayland;
 
 typedef struct Nos {

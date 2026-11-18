@@ -102,6 +102,7 @@ Nos *new_Nos(Janela *janela, sWayland *wayland){
     xdg_surface_add_listener(janela->xdg, &xdg_surface_listener, nos);//adiciona listener pra eventos de configuração da janela
 
     
+    
 
     wl_surface_commit(janela->surface);
     wl_display_roundtrip(wayland->display);

@@ -15,6 +15,7 @@ extern const struct xdg_surface_listener xdg_surface_listener;
 extern const struct wl_registry_listener registry_listener;
 extern const struct xdg_toplevel_listener toplevel_listener;
 extern const struct wl_callback_listener frame_listener;
+extern const struct wl_seat_listener seat_listener;
 
 void wm_base_ping(void *data, struct xdg_wm_base *wm_base, uint32_t serial);
 void registry_handler(void *data, struct wl_registry *registry, uint32_t id, const char *interface, uint32_t version);
@@ -27,6 +28,7 @@ void frame_done(void *data, struct wl_callback *callback, uint32_t time);
 void buffer_release(void *data, struct wl_buffer *buffer);
 void handle_close(void *data, struct xdg_toplevel *xdg_toplevel);
 void attJanela(void *data);
+void seat_capabilities(void *data, struct wl_seat *seat, uint32_t capabilities);
 
 
 #endif
